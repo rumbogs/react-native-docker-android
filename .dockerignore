@@ -1,0 +1,13 @@
+node_modules
+**/dist
+.git
+npm-debug.log
+.coverage
+.coverage.*
+.env
+.vscode
+.github
+.codebuild
+.circleci
+.DS_Store
+

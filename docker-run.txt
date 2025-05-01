@@ -1,0 +1,23 @@
+podman run --memory=14g --cpus=10 -it \
+    -v $(pwd)/src:/usr/src/app/src \
+    -v $(pwd)/android:/usr/src/app/android \
+    -v $(pwd)/assets:/usr/src/app/assets \
+    -v $(pwd)/index.android.js:/usr/src/app/index.android.js \
+    -v $(pwd)/package.json:/usr/src/app/package.json.tmp \
+    -v $(pwd)/yarn.lock:/usr/src/app/yarn.lock.tmp \
+    -v $(pwd)/patches:/usr/src/app/patches \
+    -v $(pwd)/scripts:/usr/src/app/scripts \
+    -v $(pwd)/.git:/usr/src/app/.git \
+    -v $(pwd)/babel.config.js:/usr/src/app/babel.config.js \
+    -v $(pwd)/app.json:/usr/src/app/app.json \
+    -v $(pwd)/packager:/usr/src/app/packager \
+    -v $(pwd)/metro.config.js:/usr/src/app/metro.config.js \
+    -v $(pwd)/jsconfig.json:/usr/src/app/jsconfig.json \
+    -v $(pwd)/.yarn:/usr/src/app/.yarn \
+    -v $(pwd)/.gradle-tmp:/root/.gradle \
+    -e GH_USER=GH_USER \
+    -e GH_TOKEN=GH_TOKEN \
+    -e GIT_DISCOVERY_ACROSS_FILESYSTEM=1 \
+    --cap-add=NET_RAW \
+    hive-soaring-sparrow-android
+

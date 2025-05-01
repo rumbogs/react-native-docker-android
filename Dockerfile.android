@@ -1,0 +1,57 @@
+FROM --platform=linux/amd64 ubuntu:22.04 as dev
+
+# Set the Android SDK root path
+ENV ANDROID_HOME=/opt/android_sdk
+ENV ANDROID_SDK_ROOT=$ANDROID_HOME
+ENV PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
+ENV GH_USER
+ENV GH_TOKEN
+ENV GIT_DISCOVERY_ACROSS_FILESYSTEM=1
+
+ENV GRADLE_OPTS="-Xmx2048m -XX:MaxMetaspaceSize=512m"
+ENV NODE_OPTIONS="--max_old_space_size=4096"
+
+WORKDIR /usr/src/app
+
+# Install Java 17, curl, unzip
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openjdk-17-jdk-headless \
+    curl \
+    unzip \
+    git \
+    # Remove once everything is working
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git config --global credential.helper store
+
+# Get the Android command line tools zip
+RUN curl https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdlinetools.zip
+# Create the required directory for them, unzip and clean up
+RUN mkdir -p /opt/android_sdk/cmdline-tools \
+    && unzip -d /tmp/cmdlinetools /tmp/cmdlinetools.zip \
+    && mv /tmp/cmdlinetools/cmdline-tools/ /opt/android_sdk/cmdline-tools/latest/ \
+    && rm /tmp/cmdlinetools.zip \
+    && rm -rf /tmp/cmdlinetools
+
+# Accept all licenses
+RUN yes | sdkmanager --licenses
+
+# Install Android build tools
+# TODO: use args for correct versions
+RUN yes | sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" "cmake;3.22.1" "ndk;26.1.10909125"
+
+# Install node using n remotely
+RUN curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n | bash -s 18.20
+
+RUN npm install --global yarn jetifier
+
+RUN --mount=type=cache,target=/usr/src/app/.yarn \
+	yarn config set cache-folder /usr/src/app/.yarn
+
+COPY docker-entrypoint.sh /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+#ENTRYPOINT ["docker-entrypoint.sh"]
+
